@@ -1,6 +1,6 @@
 {
   "name": "@reliverse/ohmymsg",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "@reliverse/ohmymsg is a powerful, comprehensive spam detection and content analysis library built with TypeScript and Bun. OhMyMsg provides advanced text processing, machine learning-based classification, and multi-layered security scanning for emails, messages, and text content. Note: Requires a trained classifier.json file for optimal performance.",
   "scripts": {

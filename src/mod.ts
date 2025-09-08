@@ -203,9 +203,9 @@ const DATE_PATTERNS = [
 
 // File path detection (DONE)
 const FILE_PATH_PATTERNS = [
-  /[a-z]:\\\\[^\\s<>:"|?*]+/gi, // Windows paths
-  /\/[^\\s<>:"|?*]+/g, // Unix paths
-  /~\/[^\\s<>:"|?*]+/g, // Home directory paths
+  /[a-z]:\\\\[^\\s<>:"|?*]+(?:\\[^\\s<>:"|?*]+)+/gi, // Windows paths with at least 2 segments
+  /(?:^|\s)\/(?!\/)[^\s<>:"|?*]+(?:\/[^\s<>:"|?*]+)+/g, // Unix paths (avoid protocol-relative //)
+  /~\/(?:[^\s<>:"|?*]+)(?:\/[^\s<>:"|?*]+)*/g, // Home directory paths
 ];
 
 // Additional regex patterns
@@ -218,6 +218,54 @@ const BITCOIN_PATTERN = bitcoinRegex({ exact: false });
 const MAC_PATTERN = macRegex({ exact: false });
 const HEX_COLOR_PATTERN = hexaColorRegex({ exact: false });
 const FLOATING_POINT_PATTERN = floatingPointRegex;
+
+// Hoisted regular expressions
+const DOCTYPE_REGEX = /<!doctype[^>]*>/gi;
+const HTML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
+const LEADING_DOUBLE_SLASH_REGEX = /^\s*\/\//;
+const HTTP_URL_REGEX = /https?:\/\//i;
+const REACT_STREAM_MARKER_REGEX = /\/\$-{0,2}/;
+const W3C_DTD_REGEX = /w3\.org\/(TR|tr)\/xhtml1\/DTD\//i;
+const TEMPLATE_HANDLEBARS_REGEX = /{{[\s\S]*?}}/g;
+const TEMPLATE_TWIG_REGEX = /{%[\s\S]*?%}/g;
+const TEMPLATE_EJS_REGEX = /<%[=-]?[\s\S]*?%>/g;
+const ATTR_VALUE_DOUBLE_QUOTE_REGEX = /(\b(?:href|src|data|content)\s*=\s*")[^"]*(")/gi;
+const ATTR_VALUE_SINGLE_QUOTE_REGEX = /(\b(?:href|src|data|content)\s*=\s*')[^']*(')/gi;
+const NULL_UNDEFINED_REGEX = /\b(null|undefined)\b/gi;
+
+// Sensitive directories and dangerous file extensions
+const SENSITIVE_DIRS = [
+  "/etc/",
+  "/bin/",
+  "/usr/bin/",
+  "/usr/sbin/",
+  "/sbin/",
+  "/var/",
+  "/dev/",
+  "/private/",
+  "C:\\Windows\\",
+  "C:\\Program Files\\",
+  "C:\\Users\\",
+  "C:\\ProgramData\\",
+];
+const DANGEROUS_EXTS = new Set([
+  "exe",
+  "bat",
+  "cmd",
+  "com",
+  "scr",
+  "pif",
+  "ps1",
+  "vbs",
+  "vbe",
+  "js",
+  "jse",
+  "jar",
+  "msi",
+  "msp",
+  "dll",
+  "sys",
+]);
 
 // Type definitions
 interface SpamScannerOptions {
@@ -250,6 +298,9 @@ interface SpamScannerOptions {
   enableAdvancedStemming?: boolean;
   stemmingEncoding?: CharacterEncoding;
   stemmingFallbackToOriginal?: boolean;
+  // Path detection controls
+  filePathDetection?: "off" | "benign" | "strict";
+  allowlistedPaths?: RegExp[];
 }
 
 interface ScanResult {
@@ -387,6 +438,9 @@ class SpamScanner {
       },
       classifier: null,
       replacements: null,
+      // Defaults for new options
+      filePathDetection: "strict",
+      allowlistedPaths: [W3C_DTD_REGEX],
       ...options,
     };
 
@@ -656,9 +710,29 @@ class SpamScanner {
     html?: string;
   }): Promise<Array<{ type: string; path: string; description: string }>> {
     const results: Array<{ type: string; path: string; description: string }> = [];
+
+    // Respect mode: off
+    if (this.config.filePathDetection === "off") {
+      return results;
+    }
     const textContent = mail.text || "";
     const htmlContent = mail.html || "";
-    const allContent = textContent + " " + htmlContent;
+    // Strip DOCTYPE declarations and HTML comments to avoid false positives
+    let allContent = (textContent + " " + htmlContent)
+      .replace(DOCTYPE_REGEX, " ")
+      .replace(HTML_COMMENT_REGEX, " ")
+      .replace(TEMPLATE_HANDLEBARS_REGEX, " ")
+      .replace(TEMPLATE_TWIG_REGEX, " ")
+      .replace(TEMPLATE_EJS_REGEX, " ");
+
+    // Blank out attribute values for safe attributes to avoid path-like content there
+    allContent = allContent
+      .replace(ATTR_VALUE_DOUBLE_QUOTE_REGEX, "$1$2")
+      .replace(ATTR_VALUE_SINGLE_QUOTE_REGEX, "$1$2")
+      .replace(NULL_UNDEFINED_REGEX, " ");
+
+    const seen = new Set<string>();
+    const collected: Array<{ path: string; suspicious: boolean }> = [];
 
     for (const pattern of FILE_PATH_PATTERNS) {
       const matches = allContent.match(pattern);
@@ -666,13 +740,45 @@ class SpamScanner {
         for (const match of matches) {
           // Skip HTML tags and common false positives
           if (this.isValidFilePath(match)) {
-            results.push({
-              type: "file_path",
-              path: match,
-              description: "Suspicious file path detected",
-            });
+            const normalized = match.trim();
+            if (seen.has(normalized)) {
+              continue;
+            }
+            seen.add(normalized);
+
+            const suspicious = this.isSuspiciousPath(normalized, allContent);
+            collected.push({ path: normalized, suspicious });
           }
         }
+      }
+    }
+
+    // Cap to avoid over-weighting
+    const MAX_PATHS = 10;
+    for (const item of collected.slice(0, MAX_PATHS)) {
+      const subtype = item.suspicious ? "suspicious" : "benign";
+      const description = item.suspicious
+        ? "Suspicious file path detected"
+        : "Benign file path detected";
+
+      // Respect mode: benign (report but not suspicious)
+      if (this.config.filePathDetection === "benign") {
+        results.push({
+          type: "file_path",
+          path: item.path,
+          description: "Benign file path detected",
+        });
+        continue;
+      }
+
+      // Respect allowlist
+      if (this.isAllowlisted(item.path)) {
+        continue;
+      }
+
+      // In strict mode, only push suspicious; benigns are ignored
+      if (subtype === "suspicious") {
+        results.push({ type: "file_path", path: item.path, description });
       }
     }
 
@@ -806,6 +912,24 @@ class SpamScanner {
       return false;
     }
 
+    // Ignore obvious URL-like or protocol strings
+    if (LEADING_DOUBLE_SLASH_REGEX.test(path)) {
+      return false;
+    }
+    if (HTTP_URL_REGEX.test(path)) {
+      return false;
+    }
+
+    // Ignore React streaming/server-rendering markers like <!--$--> becoming "/$--"
+    if (REACT_STREAM_MARKER_REGEX.test(path)) {
+      return false;
+    }
+
+    // Whitelist known safe W3C DTD references
+    if (W3C_DTD_REGEX.test(path)) {
+      return false;
+    }
+
     // Skip paths that are just domain names
     if (DOMAIN_PATH_REGEX.test(path)) {
       return false;
@@ -817,6 +941,51 @@ class SpamScanner {
     }
 
     return true;
+  }
+
+  // Evaluate suspiciousness based on sensitive dirs, dangerous extensions, and repetition
+  private isSuspiciousPath(path: string, context: string): boolean {
+    // Allowlist first
+    if (this.isAllowlisted(path)) {
+      return false;
+    }
+
+    const lower = path.toLowerCase();
+    for (const dir of SENSITIVE_DIRS) {
+      if (lower.includes(dir.toLowerCase())) {
+        return true;
+      }
+    }
+
+    // biome-ignore lint/performance/useTopLevelRegex: <>
+    const lastSegment = lower.split(/[\\/]/).pop() || "";
+    const ext = lastSegment.includes(".") ? lastSegment.split(".").pop() || "" : "";
+    if (ext && DANGEROUS_EXTS.has(ext)) {
+      return true;
+    }
+
+    // If the same path appears multiple times, treat as more suspicious
+    const occurrences = (
+      context.match(new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []
+    ).length;
+    if (occurrences >= 2) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private isAllowlisted(path: string): boolean {
+    const list = this.config.allowlistedPaths || [];
+    for (const re of list) {
+      try {
+        if (re.test(path)) {
+          return true;
+        }
+        // biome-ignore lint/suspicious/noEmptyBlockStatements: <>
+      } catch {}
+    }
+    return false;
   }
 
   // Optimize URL parsing with timeout protection (DONE)
@@ -1089,6 +1258,9 @@ class SpamScanner {
       text = text.replace(FLOATING_POINT_PATTERN, " FLOATING_POINT ");
     }
 
+    // Remove standalone null/undefined tokens to prevent noise
+    text = text.replace(NULL_UNDEFINED_REGEX, " ");
+
     return text;
   }
 
@@ -1126,6 +1298,12 @@ class SpamScanner {
       ]);
 
       // Determine if spam
+      // In benign mode, file_path findings shouldn't cause spam
+      const effectivePatterns =
+        this.config.filePathDetection === "benign"
+          ? patterns.filter((p) => p.type !== "file_path")
+          : patterns;
+
       const isSpam =
         classification.category === "spam" ||
         phishing.length > 0 ||
@@ -1133,7 +1311,7 @@ class SpamScanner {
         macros.length > 0 ||
         arbitrary.length > 0 ||
         viruses.length > 0 ||
-        patterns.length > 0 ||
+        effectivePatterns.length > 0 ||
         idnHomographAttack?.detected;
 
       // Generate message
@@ -1164,7 +1342,7 @@ class SpamScanner {
           reasons.push("virus detected");
         }
 
-        if (patterns.length > 0) {
+        if (effectivePatterns.length > 0) {
           reasons.push("suspicious patterns");
         }
 

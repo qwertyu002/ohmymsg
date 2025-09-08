@@ -161,7 +161,7 @@ Advanced detection of malicious macros and scripts embedded in documents and ema
 Enhanced pattern recognition for modern spam and phishing techniques.
 
 - **Date Pattern Detection**: Recognizes various date formats used in spam campaigns (MM/DD/YYYY, DD/MM/YYYY, YYYY/MM/DD, DD MMM YYYY, MMM DD, YYYY)
-- **File Path Detection**: Identifies suspicious file paths and directory structures (Windows, Unix, home directory paths)
+- **File Path Detection**: Identifies suspicious file paths and directory structures (Windows, Unix, home directory paths) with reduced false positives via context-aware parsing, template/doctype/comment stripping, allowlists, and configurable detection modes
 - **Credit Card Pattern Detection**: Enhanced financial data recognition and protection
 - **Phone Number Analysis**: Improved phone number pattern matching across regions
 - **Cryptocurrency Detection**: Bitcoin and other cryptocurrency address recognition
@@ -533,6 +533,9 @@ const scanner = new SpamScanner({
   enableMalwareUrlCheck: true,
   enablePhishingProtection: true,
   enableAdvancedPatternRecognition: true,
+  // File path detection controls
+  filePathDetection: 'benign', // 'off' | 'benign' | 'strict' (default 'strict')
+  allowlistedPaths: [ /w3\.org\/(TR|tr)\/xhtml1\/DTD\//i, /my-safe-assets\//i ],
 
   // IDN Homograph Attack Detection
   enableIDNDetection: true,
@@ -878,6 +881,8 @@ We have configured the scanner defaults to utilize a default classifier, and sen
 | `logger` | Console | console | Custom logger instance |
 | `classifier` | Object | null | Custom classifier data |
 | `replacements` | Object | null | Custom text replacements |
+| `filePathDetection` | String | 'strict' | File path detection mode: 'off' (disabled), 'benign' (report-only), 'strict' (flag suspicious) |
+| `allowlistedPaths` | Array<RegExp> | W3C DTD | Allowlist of safe path patterns to ignore |
 
 **ClamAV Configuration:**
 

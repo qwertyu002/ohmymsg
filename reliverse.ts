@@ -11,7 +11,7 @@ export default defineConfig({
   projectAuthor: "reliverse",
   projectDescription:
     "@reliverse/ohmymsg is a powerful, comprehensive spam detection and content analysis library built with TypeScript and Bun. OhMyMsg provides advanced text processing, machine learning-based classification, and multi-layered security scanning for emails, messages, and text content.",
-  version: "1.0.1",
+  version: "1.0.2",
   projectLicense: "Apache-2.0",
   projectState: "created",
   projectRepository: "unknown",
