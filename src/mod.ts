@@ -24,13 +24,22 @@ import lande from "lande";
 import macRegex from "mac-regex";
 import { simpleParser } from "mailparser";
 import natural from "natural";
-import snowball from "node-snowball";
 import normalizeUrl from "normalize-url";
 import phoneRegex from "phone-regex";
 import sw from "stopword";
 import striptags from "striptags";
 import superagent from "superagent";
 import emailRegexSafe from "./email-regex-safe";
+import snowball, {
+  CharacterEncoding,
+  getSupportedAlgorithms,
+  isLanguageSupported,
+  stemwordAdvanced,
+} from "./node-snowball.js";
+
+// Re-export for external use
+export type { CharacterEncoding };
+
 import urlRegexSafe from "./url-regex-safe";
 
 // ES module compatibility
@@ -237,6 +246,10 @@ interface SpamScannerOptions {
   replacements?: Record<string, string> | null;
   hashTokens?: boolean;
   strictIDNDetection?: boolean;
+  // Enhanced stemming options
+  enableAdvancedStemming?: boolean;
+  stemmingEncoding?: CharacterEncoding;
+  stemmingFallbackToOriginal?: boolean;
 }
 
 interface ScanResult {
@@ -352,6 +365,11 @@ class SpamScanner {
       supportedLanguages: ["en"],
       enableMixedLanguageDetection: false,
       enableAdvancedPatternRecognition: true,
+
+      // Enhanced stemming options
+      enableAdvancedStemming: false,
+      stemmingEncoding: CharacterEncoding.UTF_8,
+      stemmingFallbackToOriginal: true,
 
       // Existing options
       debug: false,
@@ -967,19 +985,20 @@ class SpamScanner {
       processedTokens = processedTokens.filter((token: string) => !stopwordSet.has(token));
     }
 
-    // Stem words if available for the language
+    // Enhanced stemming using the full node-snowball capabilities
     try {
-      if (["en", "es", "fr", "de", "it", "pt"].includes(locale)) {
-        processedTokens = processedTokens.map((token: string) => {
-          try {
-            return snowball.stemword(token, locale);
-          } catch {
-            return token;
-          }
+      if (isLanguageSupported(locale)) {
+        const useAdvancedStemming =
+          this.config.enableAdvancedStemming && this.isAdvancedStemmingSupported(locale);
+        processedTokens = await this.getEnhancedStemming(processedTokens, locale, {
+          encoding: this.config.stemmingEncoding || CharacterEncoding.UTF_8,
+          fallbackToOriginal: this.config.stemmingFallbackToOriginal ?? true,
+          useAdvancedStemming,
         });
       }
-    } catch {
-      // If stemming fails, continue with original tokens
+    } catch (error) {
+      debug(`Enhanced stemming failed for locale '${locale}':`, error);
+      // Fallback to original tokens if stemming fails
     }
 
     // Apply token hashing if enabled
@@ -990,6 +1009,51 @@ class SpamScanner {
     }
 
     return processedTokens;
+  }
+
+  // Enhanced stemming method using the full node-snowball capabilities
+  private async getEnhancedStemming(
+    tokens: string[],
+    locale: string,
+    options: {
+      encoding?: CharacterEncoding;
+      fallbackToOriginal?: boolean;
+      useAdvancedStemming?: boolean;
+    } = {},
+  ): Promise<string[]> {
+    if (!tokens || tokens.length === 0) {
+      return [];
+    }
+
+    const {
+      encoding = CharacterEncoding.UTF_8,
+      fallbackToOriginal = true,
+      useAdvancedStemming = false,
+    } = options;
+
+    try {
+      if (!isLanguageSupported(locale)) {
+        debug(`Language '${locale}' not supported for stemming, returning original tokens`);
+        return tokens;
+      }
+
+      if (useAdvancedStemming) {
+        // Use the advanced stemming with full configuration
+        const result = stemwordAdvanced(tokens, {
+          language: locale,
+          encoding,
+          fallbackToOriginal,
+        });
+        return Array.isArray(result) ? result : [result];
+      } else {
+        // Use the standard stemming (backward compatible)
+        const result = snowball.stemword(tokens, locale, encoding);
+        return Array.isArray(result) ? result : [result];
+      }
+    } catch (error) {
+      debug(`Stemming failed for locale '${locale}':`, error);
+      return fallbackToOriginal ? tokens : [];
+    }
   }
 
   // Enhanced text preprocessing with pattern recognition
@@ -1598,6 +1662,87 @@ class SpamScanner {
     }
 
     return this.idnDetector;
+  }
+
+  // Public methods for enhanced stemming capabilities
+
+  /**
+   * Get all supported languages for stemming
+   * @returns Array of supported language codes
+   */
+  getSupportedStemmingLanguages(): string[] {
+    return getSupportedAlgorithms();
+  }
+
+  /**
+   * Check if a language supports stemming
+   * @param locale - The language code to check
+   * @returns True if the language is supported
+   */
+  isStemmingSupported(locale: string): boolean {
+    return isLanguageSupported(locale);
+  }
+
+  /**
+   * Check if a language supports advanced stemming features
+   * @param locale - The language code to check
+   * @returns True if advanced stemming is supported
+   */
+  isAdvancedStemmingSupported(locale: string): boolean {
+    return (
+      isLanguageSupported(locale) &&
+      ![
+        "ar",
+        "hy",
+        "eu",
+        "ca",
+        "da",
+        "fi",
+        "el",
+        "hi",
+        "hu",
+        "ga",
+        "lt",
+        "ne",
+        "ro",
+        "sr",
+        "ta",
+        "tr",
+        "yi",
+      ].includes(locale)
+    );
+  }
+
+  /**
+   * Stem text using the enhanced node-snowball capabilities
+   * @param text - The text to stem
+   * @param locale - The language code
+   * @param options - Stemming options
+   * @returns Array of stemmed tokens
+   */
+  async stemText(
+    text: string,
+    locale = "en",
+    options: {
+      encoding?: CharacterEncoding;
+      fallbackToOriginal?: boolean;
+      useAdvancedStemming?: boolean;
+    } = {},
+  ): Promise<string[]> {
+    if (!isSANB(text)) {
+      return [];
+    }
+
+    // Tokenize the text first
+    const tokens = await this.getTokens(text, locale);
+
+    // Apply enhanced stemming
+    return this.getEnhancedStemming(tokens, locale, {
+      encoding: this.config.stemmingEncoding || CharacterEncoding.UTF_8,
+      fallbackToOriginal: this.config.stemmingFallbackToOriginal ?? true,
+      useAdvancedStemming: options.useAdvancedStemming ?? this.config.enableAdvancedStemming,
+      ...options,
+    });
   }
 
   // Hybrid language detection using both lande and franc

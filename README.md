@@ -1826,6 +1826,11 @@ const scanner = new SpamScanner({
 
 We welcome contributions! 👋
 
+**TODO**:
+
+- [ ] Ensure 100% backwards compatibility with SpamScanner
+- [x] Rewrite node-snowball library from C++ to TypeScript
+
 ## License
 
 This project is licensed under the Apache-2.0 License

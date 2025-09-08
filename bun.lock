@@ -24,6 +24,7 @@
         "currency-codes": "^2.2.0",
         "currency-symbol-map": "^5.1.0",
         "escape-string-regexp": "^5.0.0",
+        "ffi-rs": "^1.3.0",
         "file-extension": "^4.0.5",
         "file-type": "^21.0.0",
         "floating-point-regex": "^0.1.0",
@@ -52,7 +53,6 @@
         "natural": "^8.1.0",
         "newline-remove": "^1.0.2",
         "node-html-parser": "^7.0.1",
-        "node-snowball": "^0.8.0",
         "nodemailer": "^7.0.6",
         "normalize-url": "^8.0.2",
         "nsfwjs": "^4.2.1",
@@ -1420,6 +1420,28 @@
 
     "@xtuc/long": ["@xtuc/long@4.2.2", "", {}, "sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ=="],
 
+    "@yuuang/ffi-rs-android-arm64": ["@yuuang/ffi-rs-android-arm64@1.3.0", "", { "os": "android", "cpu": "arm64" }, "sha512-1kO6gmoDwZVlEzqbWXkQke8WLGAECOAAjTNBjphPN1sn+ICdUGBfR7TKHMbygspGXpFUFFI7/H75l3Gt8QsaLQ=="],
+
+    "@yuuang/ffi-rs-darwin-arm64": ["@yuuang/ffi-rs-darwin-arm64@1.3.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-JJOG1MXNV04FN0SWNUSK1i3LJVn76XF15+OcRYl0bWgjYnfsBzXzeIQdAp3wIlDTPPQQ+Z3Fxbb+b7wuf7uIDA=="],
+
+    "@yuuang/ffi-rs-darwin-x64": ["@yuuang/ffi-rs-darwin-x64@1.3.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-YAagzuM6LNqbcFhXMfUFmTT0F+RD6qV59Qe7L20mb5Xf9luipieqs2fEUVU+MAkgXk1gXRj7HczWkI97+qa3Mg=="],
+
+    "@yuuang/ffi-rs-linux-arm-gnueabihf": ["@yuuang/ffi-rs-linux-arm-gnueabihf@1.3.0", "", { "os": "linux", "cpu": "arm" }, "sha512-RZOU9PcYpaE920dDoDSEL+UQ19CU9MEf9Gm3kKSpb161TPeKzqMZPUEMpbRaww18pPBN1aWbe2BHiyKAO6tTcg=="],
+
+    "@yuuang/ffi-rs-linux-arm64-gnu": ["@yuuang/ffi-rs-linux-arm64-gnu@1.3.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-US8XxQUja+dK4WTZWy9RD2/N/c4bLpFoH7sNYO+ENEpmfMbrB7Nw2bKvCk/I0OptuV4P3pScRgDD5xk4ztXgEA=="],
+
+    "@yuuang/ffi-rs-linux-arm64-musl": ["@yuuang/ffi-rs-linux-arm64-musl@1.3.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-DQ++kgJ6hks90wnDoY3PSkoxX2DmNI4e/H/gKFLKoOm+3K++se/ZyONwlVvDmOWKt2yTt6SyrxoIO7atr5LQmQ=="],
+
+    "@yuuang/ffi-rs-linux-x64-gnu": ["@yuuang/ffi-rs-linux-x64-gnu@1.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-HTk+RUDozycipfL97TsmVhZpJKK3ciTY4gIC6Wlg9dFpwcCscUVH5B6DKctbV/KmCV7r3FMB2eJxQBuLRH1JFg=="],
+
+    "@yuuang/ffi-rs-linux-x64-musl": ["@yuuang/ffi-rs-linux-x64-musl@1.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-qpcPQW2AIeuS/CCBZhKEI07JxfoVulFQUHjsx6rhoAC5SVb2V+wcf8X5CkIvwhiRzydelw/uRml5vY0z+ieh1w=="],
+
+    "@yuuang/ffi-rs-win32-arm64-msvc": ["@yuuang/ffi-rs-win32-arm64-msvc@1.3.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-Dflhd43LH4Y4pcWp3opozPp0b+8xAvxWq8ZyIWf/HhTMYIvWWjBoGo3LvLgzx8R2CdELKMO17dni76qCgJfv1A=="],
+
+    "@yuuang/ffi-rs-win32-ia32-msvc": ["@yuuang/ffi-rs-win32-ia32-msvc@1.3.0", "", { "os": "win32", "cpu": [ "x64", "ia32", ] }, "sha512-auc7WR0fKArxxt2m9HaHWrgJMlkwVg94+AN5TGGwT0RIAJTfc7juExXHwpRcWifDTykooXyGvJdTY351L1BVww=="],
+
+    "@yuuang/ffi-rs-win32-x64-msvc": ["@yuuang/ffi-rs-win32-x64-msvc@1.3.0", "", { "os": "win32", "cpu": "x64" }, "sha512-GL9q9cyuZXkNomr3DmkwSaTKpRInY8y4efcCLvv8J4oiIRkrUzKUQ9//l26uqGmPGYGtSJ5rjLBX9uDmkhhZjQ=="],
+
     "abbrev": ["abbrev@1.1.1", "", {}, "sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q=="],
 
     "accepts": ["accepts@1.3.8", "", { "dependencies": { "mime-types": "~2.1.34", "negotiator": "0.6.3" } }, "sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw=="],
@@ -2041,6 +2063,8 @@
     "fengari-interop": ["fengari-interop@0.1.3", "", { "peerDependencies": { "fengari": "^0.1.0" } }, "sha512-EtZ+oTu3kEwVJnoymFPBVLIbQcCoy9uWCVnMA6h3M/RqHkUBsLYp29+RRHf9rKr6GwjubWREU1O7RretFIXjHw=="],
 
     "fetch-blob": ["fetch-blob@3.2.0", "", { "dependencies": { "node-domexception": "^1.0.0", "web-streams-polyfill": "^3.0.3" } }, "sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ=="],
+
+    "ffi-rs": ["ffi-rs@1.3.0", "", { "optionalDependencies": { "@yuuang/ffi-rs-android-arm64": "1.3.0", "@yuuang/ffi-rs-darwin-arm64": "1.3.0", "@yuuang/ffi-rs-darwin-x64": "1.3.0", "@yuuang/ffi-rs-linux-arm-gnueabihf": "1.3.0", "@yuuang/ffi-rs-linux-arm64-gnu": "1.3.0", "@yuuang/ffi-rs-linux-arm64-musl": "1.3.0", "@yuuang/ffi-rs-linux-x64-gnu": "1.3.0", "@yuuang/ffi-rs-linux-x64-musl": "1.3.0", "@yuuang/ffi-rs-win32-arm64-msvc": "1.3.0", "@yuuang/ffi-rs-win32-ia32-msvc": "1.3.0", "@yuuang/ffi-rs-win32-x64-msvc": "1.3.0" } }, "sha512-xdyaooHKShKvNZE9X7PDn4KdNtZaX8cPPJkIqwsx2b7u4UFk6m1VdzsmCSc6eQDFCbk7LyygU1VDl9VRbmPXEg=="],
 
     "fflate": ["fflate@0.8.2", "", {}, "sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A=="],
 
@@ -2706,8 +2730,6 @@
 
     "named-placeholders": ["named-placeholders@1.1.3", "", { "dependencies": { "lru-cache": "^7.14.1" } }, "sha512-eLoBxg6wE/rZkJPhU/xRX1WTpkFEwDJEN96oxFrTsqBdbT5ec295Q+CoHrL9IT0DipqKhmGcaZmwOt8OON5x1w=="],
 
-    "nan": ["nan@2.23.0", "", {}, "sha512-1UxuyYGdoQHcGg87Lkqm3FzefucTa0NAiOcuRsDmysep3c1LVCRK2krrUDafMWtjSG04htvAmvg96+SDknOmgQ=="],
-
     "nano-spawn": ["nano-spawn@1.0.3", "", {}, "sha512-jtpsQDetTnvS2Ts1fiRdci5rx0VYws5jGyC+4IYOTnIQ/wwdf6JdomlHBwqC3bJYOvaKu0C2GSZ1A60anrYpaA=="],
 
     "nanoid": ["nanoid@5.1.5", "", { "bin": { "nanoid": "bin/nanoid.js" } }, "sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw=="],
@@ -2757,8 +2779,6 @@
     "node-mbox": ["node-mbox@2.0.0", "", { "dependencies": { "line-stream": "^1.0.0" } }, "sha512-vdEnGM/eAdXqhiSVEpuO0EXUs7WNGu4PK73YR0p1PLMT5UsNLI9Fx1jkdw0p1OY8LM/QIfRtqlPhNOfPqAbnRw=="],
 
     "node-releases": ["node-releases@2.0.20", "", {}, "sha512-7gK6zSXEH6neM212JgfYFXe+GmZQM+fia5SsusuBIUgnPheLFBmIPhtFoAQRj8/7wASYQnbDlHPVwY0BefoFgA=="],
-
-    "node-snowball": ["node-snowball@0.8.0", "", { "dependencies": { "nan": "^2.22.2" } }, "sha512-Eew1ruT55ZPT7hYKJojdDAAAT+mTWrBT1WC6s/qeHPwFmZ2trjY/Tzm63QfE/RPrJgchOvnQYYosD9lf41SdfA=="],
 
     "nodemailer": ["nodemailer@7.0.6", "", {}, "sha512-F44uVzgwo49xboqbFgBGkRaiMgtoBrBEWCVincJPK9+S9Adkzt/wXCLKbf7dxucmxfTI5gHGB+bEmdyzN6QKjw=="],
 

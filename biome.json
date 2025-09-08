@@ -1,8 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.3/schema.json",
-  "extends": [
-    "ultracite"
-  ],
+  "extends": ["ultracite"],
   "vcs": {
     "enabled": false,
     "clientKind": "git",
@@ -51,6 +49,7 @@
         "noConsole": "off"
       },
       "style": {
+        "noExportedImports": "off",
         "useTemplate": "off",
         "noUselessElse": "off",
         "useBlockStatements": "off",
@@ -81,10 +80,7 @@
     }
   },
   "javascript": {
-    "globals": [
-      "Bun",
-      "Liveblocks"
-    ],
+    "globals": ["Bun", "Liveblocks"],
     "formatter": {
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",

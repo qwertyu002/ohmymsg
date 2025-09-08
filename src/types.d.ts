@@ -129,14 +129,6 @@ declare module "mac-regex" {
   export = macRegex;
 }
 
-declare module "node-snowball" {
-  interface SnowballOptions {
-    language?: string;
-  }
-  function stemword(word: string, language: string): string;
-  export { stemword };
-}
-
 declare module "phone-regex" {
   interface PhoneRegexOptions {
     exact?: boolean;
