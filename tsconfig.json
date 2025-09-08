@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["src/*"],
+      "@/*": ["example/*"]
+    },
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "baseUrl": ".",
+    "target": "ESNext",
+    "module": "preserve",
+    "allowJs": true,
+    "noEmit": true,
+    "strict": true,
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "exactOptionalPropertyTypes": false,
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.js"],
+  "exclude": ["node_modules", "dist"]
+}
